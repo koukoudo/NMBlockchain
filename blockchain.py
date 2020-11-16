@@ -35,14 +35,26 @@ class Blockchain:
         self.new_block(proof=100, previous_hash='1')
 
     def new_block(self, proof, previous_hash):
-        block = Block(len(self.chain) + 1, time(), self.current_transactions, proof, previous_hash)
+        block = Block(
+            index=len(self.chain) + 1,
+            timestamp=time(),
+            transactions=self.current_transactions,
+            proof=proof,
+            previous_hash=previous_hash
+        )
         self.transactions = []
         self.chain.append(block)
+
         return block
 
     def new_transaction(self, sender, recipient, amount):
-        transaction = Transaction(sender, recipient, amount)
+        transaction = Transaction(
+            sender=sender,
+            recipient=recipient,
+            amount=amount
+        )
         self.transactions.append(transaction)
+
         return len(self.chain) - 1
 
     def register_node(self, address):
@@ -57,9 +69,9 @@ class Blockchain:
     def validate_chain(self, chain):
 
     def resolve_conflicts(self):
-        #Consensus algorithm
+        # Consensus algorithm
 
     def proof_of_work(self, last_block):
-        #Proof of work algorithm
+        # Proof of work algorithm
 
     def validate_proof(self, last_proof, proof, last_hash):
