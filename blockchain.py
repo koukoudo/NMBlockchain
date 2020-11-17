@@ -4,12 +4,12 @@ from urllib.parse import urlparse
 import json
 
 class Block:
-    def __init__(self, index, timestamp, transactions, proof, previous_hash):
+    def __init__(self, index, timestamp, transactions, previous_hash, nonce=0):
         self.index = index
         self.timestamp = timestamp
         self.transactions = transactions
-        self.proof = proof
         self.previous_hash = previous_hash
+        self.nonce = nonce
 
     def calc_hash(self):
         block_string = json.dumps(self.__dict__, sort_keys=True)
@@ -28,50 +28,74 @@ class Transaction:
 class Blockchain:
     def __init__(self):
         self.chain = []
-        self.transactions = []
+        self.pending_transactions = []
         self.nodes = set()
+        self.create_genesis_block()
 
-        #Genesis block
-        self.new_block(proof=100, previous_hash='1')
+    @property
+    def last_block(self):
+        return self.chain[-1]
 
-    def new_block(self, proof, previous_hash):
-        block = Block(
-            index=len(self.chain) + 1,
-            timestamp=time(),
-            transactions=self.current_transactions,
-            proof=proof,
-            previous_hash=previous_hash
+    @property
+    def difficulty(self):
+        return 2
+
+    def create_genesis_block(self):
+        genesis_block = Block(
+            index = 0,
+            timestamp = time(),
+            transactions = [],
+            previous_hash = '0'
         )
-        self.transactions = []
-        self.chain.append(block)
 
-        return block
+        genesis_block.hash = genesis_block.calc_hash()
+        self.chain.append(genesis_block)
 
     def new_transaction(self, sender, recipient, amount):
         transaction = Transaction(
-            sender=sender,
-            recipient=recipient,
-            amount=amount
+            sender = sender,
+            recipient = recipient,
+            amount = amount
         )
-        self.transactions.append(transaction)
 
-        return len(self.chain) - 1
+        self.pending_transactions.append(transaction)
 
-    def register_node(self, address):
-        parsed_url = urlparse(address)
-        if parsed_url.netloc:
-            self.nodes.add(parsed_url.netloc)
-        elif parsed_url.path:
-            self.nodes.add(parsed_url.path)
-        else:
-            raise ValueError('Invalid URL')
+    def mine(self):
+        if not self.pending_transactions:
+            return False
 
-    def validate_chain(self, chain):
+        block = Block(
+            index = len(self.chain),
+            timestamp = time(),
+            transactions = self.pending_transactions,
+            previous_hash = self.last_block.calc_hash()
+        )
 
-    def resolve_conflicts(self):
-        # Consensus algorithm
+        proof = self.calc_proof(block)
+        self.add_block(block, proof)
+        self.pending_transactions = []
 
-    def proof_of_work(self, last_block):
-        # Proof of work algorithm
+        return block.index
 
-    def validate_proof(self, last_proof, proof, last_hash):
+    def add_block(self, block, proof):
+        if block.previous_hash != self.last_block.calc_hash():
+            return False
+
+        if not self.validate_proof(block, proof):
+            return False
+
+        self.chain.append(block)
+
+        return True
+
+    def calc_proof(self, block, proof):
+        hash = block.calc_hash()
+
+        while not hash.startswith('0' * self.difficulty):
+            block.nonce += 1
+            hash = block.calc_hash()
+
+        return hash
+
+    def validate_proof(self, block, proof):
+        return (block.calc_hash().startswith('0' * self.difficulty) and bloc.calc_hash == proof)

@@ -6,7 +6,7 @@ app = Flask(__name__)
 
 blockchain = blockchain.Blockchain()
 
-node_identifier = str(uuid4())
+node_identifier = str(uuid4()).replace('-', '')
 
 
 @app.route('/transactions/new')
@@ -88,13 +88,13 @@ def mine():
     )
 
     # Add new block to chain
-    previous_hash = last_block.calc_hash()
+    previous_hash = last_block.hash
     block = blockchain.new_block(proof, previous_hash)
 
     response = {
         'message': 'New block forged',
         'index': block.index,
-        'transactions': block.transactions,
+        'transactions': block.pending_transactions,
         'proof': block.proof,
         'previous_hash': block.previous_hash
     }
