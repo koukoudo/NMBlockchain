@@ -12,6 +12,8 @@ class Block:
         self.nonce = nonce
 
     def calc_hash(self):
+        # Get SHA256 hash of block
+
         block_string = json.dumps(self.__dict__, sort_keys=True)
         raw_hash = hashlib.sha256(block_string.encode())
         hex_hash = raw_hash.hexdigest()
@@ -34,13 +36,19 @@ class Blockchain:
 
     @property
     def last_block(self):
+        # Get last block in the chain
+
         return self.chain[-1]
 
     @property
     def difficulty(self):
+        # Complexity of proof of work algorithm
+
         return 2
 
     def create_genesis_block(self):
+        # Create the first block in the chain
+
         genesis_block = Block(
             index = 0,
             timestamp = time(),
@@ -52,6 +60,8 @@ class Blockchain:
         self.chain.append(genesis_block)
 
     def new_transaction(self, sender, recipient, amount):
+        # Add transaction to the list
+
         transaction = Transaction(
             sender = sender,
             recipient = recipient,
@@ -61,6 +71,8 @@ class Blockchain:
         self.pending_transactions.append(transaction)
 
     def mine(self):
+        # Create new block with pending transactions
+
         if not self.pending_transactions:
             return False
 
@@ -78,6 +90,8 @@ class Blockchain:
         return block.index
 
     def add_block(self, block, proof):
+        # Forge block to chain if valid
+        
         if block.previous_hash != self.last_block.calc_hash():
             return False
 
@@ -89,6 +103,8 @@ class Blockchain:
         return True
 
     def calc_proof(self, block, proof):
+        # Simple proof of work algorithm - hash must begin with # of zeros defined by difficulty property
+
         hash = block.calc_hash()
 
         while not hash.startswith('0' * self.difficulty):
@@ -98,4 +114,6 @@ class Blockchain:
         return hash
 
     def validate_proof(self, block, proof):
-        return (block.calc_hash().startswith('0' * self.difficulty) and bloc.calc_hash == proof)
+        # Validate the hash of a block 
+
+        return (block.calc_hash().startswith('0' * self.difficulty) and bloc.calc_hash() == proof)
